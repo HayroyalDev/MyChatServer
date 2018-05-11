@@ -50,12 +50,14 @@ Route::group(['prefix' => '/api/'], function (){
     Route::group(['prefix' => '/user/'], function(){
         Route::post('create','UserController@create');
         Route::post('search','UserController@search');
+        Route::post('get','UserController@getUser');
     });
 
-    Route::group(['prefix' => 'message'], function(){
+    Route::group(['prefix' => 'message/'], function(){
         Route::post('create','MessageController@create');
         Route::post('undelivered','MessageController@undelivered');
         Route::get('old','MessageController@old');
         Route::post('status', "MessageController@status");
+        Route::get('status/a','MessageController@aStatus');
     });
 });

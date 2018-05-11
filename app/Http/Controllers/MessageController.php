@@ -48,7 +48,7 @@ class MessageController extends Controller
             $error = $val->errors()->all();
             return JsonHelper::error($error);
         }
-        $msg = Message::where(['to' => $request->to, 'status' =>1])->get();
+        $msg = Message::where(['to' => $request->to, 'status' => 1])->get();
         return JsonHelper::success("Messages Fetched", $msg);
     }
 
@@ -69,12 +69,19 @@ class MessageController extends Controller
         if(isset($msg)){
             $msg->status = $request->status;
             if($msg->save()){
-                return JsonHelper::success("Status Changed", $msg);
+                return JsonHelper::success("Status Changed", [$msg]);
             }else{
                 return JsonHelper::error();
             }
         }else{
             return JsonHelper::error("Message Not Found");
+        }
+    }
+
+    public function aStatus(){
+        foreach (Message::all() as $mss){
+            $mss->status = 1;
+            $mss->save();
         }
     }
 }
