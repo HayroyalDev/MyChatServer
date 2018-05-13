@@ -42,9 +42,8 @@ class UserController extends Controller
         }
 
     }
-
     public function getUser(Request $request){
-        $ids = explode(',', $request->ids);
+        $ids = array_unique(explode(',', $request->ids));
         $users = [];
         foreach ($ids as $id){
             $user = User::find($id);
@@ -52,7 +51,15 @@ class UserController extends Controller
                 $users[] = $user;
             }
         }
-        return JsonHelper::success("Users Found", $users);
+        if(!empty($users)){
+            return JsonHelper::success("Users Found", $users);
+        }else{
+            return JsonHelper::error("No Data");
+        }
 
+    }
+    public function search(Request $request){
+        $user = User::where("username","LIKE","%$request->value%")->get();
+        return JsonHelper::success("User Found",$user);
     }
 }

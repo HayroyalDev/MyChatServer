@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helper\JsonHelper;
 use App\Message;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Psy\Util\Json;
 
@@ -16,6 +17,7 @@ class MessageController extends Controller
             'from' => 'required|exists:users,id',
             'mid' => 'required',
             'to' => 'required|exists:users,id',
+            'message' => 'required'
         ],[
             'mid.required' => "Message ID is required",
             'recipient_type.required' => "Recipient Type is required"
@@ -23,7 +25,7 @@ class MessageController extends Controller
 
         if($val->fails())
         {
-            $error = $val->errors()->all();
+            $error = implode("\n", $val->errors()->all());
             return JsonHelper::error($error);
         }
         $msg = new Message();
@@ -33,9 +35,9 @@ class MessageController extends Controller
         $msg->status = 1;
         $msg->message = $request->message;
         if($msg->save()){
-            return JsonHelper::success("Message Sent", $msg);
+            return JsonHelper::success("Message Sent", [$msg]);
         }else{
-            return JsonHelper::error("Message Not Sent", $msg);
+            return JsonHelper::error("Message Not Sent", [$msg]);
         }
     }
 
@@ -45,8 +47,8 @@ class MessageController extends Controller
         ]);
         if($val->fails())
         {
-            $error = $val->errors()->all();
-            return JsonHelper::error($error);
+            $error = implode("\n", $val->errors()->all());
+            return JsonHelper::error([$error]);
         }
         $msg = Message::where(['to' => $request->to, 'status' => 1])->get();
         return JsonHelper::success("Messages Fetched", $msg);
@@ -61,21 +63,28 @@ class MessageController extends Controller
             'recipient_type.required' => "Recipient Type is required"
         ]);
         if($val->fails()){
-            $error = $val->errors()->all();
-            return JsonHelper::error($error);
+            $error = implode("\n", $val->errors()->all());
+            return JsonHelper::error([$error]);
         }
 
-        $msg = Message::where('mid',$request->mid)->first();
-        if(isset($msg)){
-            $msg->status = $request->status;
-            if($msg->save()){
-                return JsonHelper::success("Status Changed", [$msg]);
-            }else{
-                return JsonHelper::error();
+        $ids = array_unique(explode(',', $request->mid));
+        $msgs = [];
+        foreach ($ids as $mid){
+            $msg = Message::where('mid',$mid)->first();
+            if(isset($msg)){
+                $msg->status = $request->status;
+                if($msg->save()){
+                    $msgs[] = $msg;
+                }
+                Log::info("Message Status", ["Message $mid Found"]);
             }
-        }else{
-            return JsonHelper::error("Message Not Found");
         }
+        if(!empty($msgs)){
+            return JsonHelper::success("Status Changed", $msgs);
+        }else{
+            return JsonHelper::error("No Data");
+        }
+
     }
 
     public function aStatus(){
