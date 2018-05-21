@@ -23,7 +23,7 @@ class JsonHelper
     }
 
     public static function error($message = "An Error Occurred", $data = null){
-        //Log::info("Error", [response()->json(['status' => 0, 'message' => $message, 'data' => $data])]);
+        Log::info("Error", [response()->json(['status' => 0, 'message' => $message, 'data' => $data])]);
         if(isset($data))
             return response()->json(['status' => 0, 'message' => $message, 'data' => $data]);
         else

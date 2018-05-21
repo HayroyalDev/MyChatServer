@@ -20,7 +20,7 @@ class UserController extends Controller
             if($val->fails())
             {
                 $error = implode("\n", $val->errors()->all());
-                return JsonHelper::error([$error]);
+                return JsonHelper::error($error);
             }
             $user = new User();
             $user->username = $request->username;
